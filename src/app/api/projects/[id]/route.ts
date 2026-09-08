@@ -1,0 +1,3 @@
+import { NextResponse } from "next/server";
+import { adminClient, requireAdmin } from "@/lib/admin";
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) { if (!(await requireAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 }); const supabase = adminClient(); if (!supabase) return NextResponse.json({ error: "Database not configured" }, { status: 503 }); const { error } = await supabase.from("projects").delete().eq("id", (await params).id); return error ? NextResponse.json({ error: "Unable to delete project" }, { status: 500 }) : NextResponse.json({ ok: true }); }

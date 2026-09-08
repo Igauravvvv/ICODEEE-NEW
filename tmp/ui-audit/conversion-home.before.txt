@@ -1,0 +1,209 @@
+"use client";
+
+import { motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { useRef } from "react";
+import type { Project } from "@/lib/types";
+import { services } from "@/lib/site";
+import { MagneticLink } from "@/components/magnetic-link";
+
+const reveal = { hidden: { opacity: 0, y: 28 }, visible: { opacity: 1, y: 0 } };
+
+const clientNeeds = [
+  { number: "01", title: "Launch", text: "You have a new business, offer or product and need the complete digital foundation." },
+  { number: "02", title: "Rebuild", text: "Your current website or identity no longer reflects the quality of your business." },
+  { number: "03", title: "Grow", text: "You need a stronger store, clearer content or better creative to reach the next stage." },
+];
+
+const process = [
+  ["01", "Discover", "Understand the business, audience, goals and constraints."],
+  ["02", "Strategize", "Define the scope, message, direction and measures of success."],
+  ["03", "Design", "Shape the experience, test the thinking and refine the details."],
+  ["04", "Build", "Develop, integrate, test and prepare everything for launch."],
+  ["05", "Evolve", "Support the launch, learn from real use and improve what matters."],
+];
+
+const reasons = [
+  ["Connected thinking", "Strategy, content, design and development work as one system."],
+  ["Made for the business", "Every decision begins with the outcome—not a trend or template."],
+  ["Direct collaboration", "Clear communication and fewer layers between the idea and the work."],
+  ["Built beyond launch", "The foundation is made to remain useful as the business grows."],
+];
+
+const expectations = [
+  ["Clear from day one", "A defined scope, practical milestones and visibility into what comes next."],
+  ["Thoughtful by default", "Questions are resolved before they become expensive design or development problems."],
+  ["Supported after launch", "Handover, guidance and continued improvement are part of the conversation."],
+];
+
+const faqs = [
+  ["Can you redesign an existing website?", "Yes. We can improve the strategy, structure, design and technology without forcing you to start from zero where it does not make sense."],
+  ["Do you handle content as well as design?", "Yes. Content strategy, messaging and conversion copy can be planned alongside the visual and technical work."],
+  ["Can you build an ecommerce store?", "Yes. We can plan and configure the storefront, product catalog, payments, checkout, analytics and essential integrations."],
+  ["How long does a project take?", "Timing depends on scope. After the first conversation, we provide a clear plan with deliverables, milestones and a realistic launch window."],
+  ["Do you provide support after launch?", "Yes. Ongoing support can cover updates, optimization, new features, content and design needs."],
+];
+
+const liveSites = [
+  { slug: "slugsera", name: "Slugsera", url: "https://www.slugsera.com", displayUrl: "www.slugsera.com", type: "Ecommerce / Streetwear" },
+  { slug: "rupali-construction", name: "Rupali Construction", url: "https://rupaliconstruction.com", displayUrl: "www.rupaliconstruction.com", type: "Construction / Corporate" },
+];
+
+export function ConversionHome({ projects }: { projects: Project[] }) {
+  const heroRef = useRef<HTMLElement>(null);
+  const reduceMotion = useReducedMotion();
+  const pointerX = useMotionValue(0);
+  const pointerY = useMotionValue(0);
+  const rotateY = useSpring(pointerX, { stiffness: 90, damping: 18 });
+  const rotateX = useSpring(pointerY, { stiffness: 90, damping: 18 });
+  const { scrollYProgress } = useScroll();
+  const { scrollYProgress: heroProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroLift = useTransform(heroProgress, [0, 1], [0, reduceMotion ? 0 : -110]);
+  const heroScale = useTransform(heroProgress, [0, 1], [1, reduceMotion ? 1 : .88]);
+  const heroFade = useTransform(heroProgress, [0, .78, 1], [1, .75, 0]);
+  const progressScale = useSpring(scrollYProgress, { stiffness: 120, damping: 28, mass: .3 });
+  const resolvedLiveSites = liveSites.map((site) => {
+    const project = projects.find((item) => item.slug === site.slug);
+    return { ...site, url: project?.live_url || site.url, type: project?.category || site.type };
+  });
+
+  const handleHeroMove = (event: React.PointerEvent<HTMLElement>) => {
+    if (reduceMotion) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    pointerX.set(((event.clientX - rect.left) / rect.width - .5) * 13);
+    pointerY.set(-((event.clientY - rect.top) / rect.height - .5) * 10);
+  };
+
+  return <main>
+    <motion.div className="scroll-progress" style={{ scaleX: progressScale }} aria-hidden="true" />
+    <section ref={heroRef} className="home-hero scene-light cinematic-hero" onPointerMove={handleHeroMove} onPointerLeave={() => { pointerX.set(0); pointerY.set(0); }}>
+      <div className="aurora aurora-one" aria-hidden="true" />
+      <div className="aurora aurora-two" aria-hidden="true" />
+      <div className="aurora aurora-three" aria-hidden="true" />
+      <div className="hero-blueprint" aria-hidden="true" />
+      <motion.div className="hero-grid-container" style={{ y: heroLift, scale: heroScale, opacity: heroFade }}>
+        <div className="hero-content">
+          <motion.p className="hero-kicker" initial="hidden" animate="visible" variants={reveal}>ONE STUDIO <span>—</span> FIVE CONNECTED CAPABILITIES</motion.p>
+          <motion.h1 initial="hidden" animate="visible" variants={reveal} transition={{ duration: .48, delay: .04 }}>
+            LOOK SHARP.<br /><span>WORK HARD.</span><br />GROW BETTER.
+          </motion.h1>
+          <motion.p className="hero-statement" initial="hidden" animate="visible" variants={reveal} transition={{ duration: .48, delay: .08 }}>
+            Websites, ecommerce, UI/UX, content and graphic design for businesses ready to move forward. <span>Built together. Built with intent.</span>
+          </motion.p>
+          <motion.div className="hero-actions" initial="hidden" animate="visible" variants={reveal} transition={{ duration: .48, delay: .12 }}>
+            <Link href="/contact" className="btn-primary">Discuss your project <span>↗</span></Link>
+            <Link href="#selected-work" className="btn-text"><i aria-hidden="true">▶</i> See the work</Link>
+          </motion.div>
+        </div>
+
+        <motion.div className="hero-showcase" initial={{ opacity: 0, x: 95 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .62, delay: .08, ease: [0.2, .8, .2, 1] }} aria-label="Live website, ecommerce, branding and fashion design work by iCodeee">
+          <motion.div className="showcase-depth" style={{ rotateX, rotateY }}>
+          <div className="hero-orbit-sculpture" aria-hidden="true"><i /><i /><i /><b>05</b></div>
+          <div className="paper-plane" aria-hidden="true">➤</div>
+          <div className="showcase-stage">
+            <a className="showcase-panel project-panel panel-rupali" href="https://rupaliconstruction.com" target="_blank" rel="noreferrer">
+              <div className="hero-card-top"><span>01 / WEBSITE</span><b>LIVE</b></div>
+              <div className="hero-mini-site"><iframe src="https://rupaliconstruction.com" title="Rupali Construction website preview" loading="lazy" /></div>
+              <div className="hero-card-copy"><small>www.rupaliconstruction.com</small><h2>Rupali<br />Construction</h2><p>Strategy · UI/UX · Development</p></div>
+            </a>
+            <a className="showcase-panel project-panel panel-slugsera" href="https://www.slugsera.com" target="_blank" rel="noreferrer">
+              <div className="hero-card-top"><span>02 / ECOMMERCE</span><b>LIVE</b></div>
+              <div className="hero-mini-site"><iframe src="https://www.slugsera.com" title="Slugsera ecommerce preview" loading="lazy" /></div>
+              <div className="hero-card-copy"><small>www.slugsera.com</small><h2>Slugsera<br />Store</h2><p>Storefront · Checkout · Growth</p></div>
+            </a>
+            <div className="showcase-panel project-panel panel-branding">
+              <div className="hero-card-top"><span>03 / BRANDING</span><b>IDENTITY</b></div>
+              <div className="slug-brand-canvas"><i>S</i><strong>SLUGSERA</strong><span>MOVE<br />MENT.</span><div><b /><b /><b /></div></div>
+              <div className="hero-card-copy"><small>Brand system / Slugsera</small><h2>Logo &amp;<br />Identity</h2><p>Wordmark · Palette · Direction</p></div>
+            </div>
+            <div className="showcase-panel project-panel panel-uiux">
+              <div className="hero-card-top"><span>04 / UI·UX</span><b>PRODUCT</b></div>
+              <div className="uiux-canvas"><span className="uiux-nav" /><div className="uiux-copy"><b /><b /><i /></div><div className="uiux-phone"><i /><b /><span /></div><div className="uiux-dots"><i /><i /><i /></div></div>
+              <div className="hero-card-copy"><small>Digital product system</small><h2>UI / UX<br />Design</h2><p>Flows · Prototype · Interface</p></div>
+            </div>
+            <div className="showcase-panel project-panel panel-fashion">
+              <div className="hero-card-top"><span>05 / DESIGN</span><b>APPAREL</b></div>
+              <div className="fashion-mockup"><Image className="fashion-look" src="/work/tracksuit-model.webp" alt="Black and beige House of Walia tracksuit mockup" fill sizes="260px" /><Image className="fashion-detail" src="/work/tracksuit-hoodie.webp" alt="House of Walia hoodie design detail" fill sizes="260px" /></div>
+              <div className="hero-card-copy"><small>House of Walia / Mockup</small><h2>Clothing<br />Design</h2><p>Concept · Panels · Production</p></div>
+            </div>
+            <div className="showcase-folder-back" aria-hidden="true"><span>ICODEEE / WORK SYSTEM</span><i /><i /></div>
+            <div className="showcase-bin" aria-hidden="true">
+              <div className="folder-side-face" />
+              <div className="folder-bottom-face" />
+              <div className="folder-sheen" />
+              <div className="folder-label"><small>SELECTED WORK</small><strong>PORTFOLIO / 05</strong></div>
+              <div className="bin-logo"><span>KEY</span><b>05</b></div>
+              <div className="folder-index"><i /><i /><i /><i /><i /></div>
+              <div className="folder-corner-mark">IC—26</div>
+            </div>
+          </div>
+          <div className="floating-spec spec-one"><span>DESIGN SYSTEM</span><b>∞</b></div>
+          <div className="floating-spec spec-two"><span>BUILD STATUS</span><b>LIVE</b></div>
+          </motion.div>
+        </motion.div>
+      </motion.div>
+      <div className="hero-scroll-cue"><span>Scroll to explore</span><i /></div>
+    </section>
+
+    <motion.section className="trust-strip" aria-label="How iCodeee works" initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .5 }}>
+      <p>One connected studio from first idea to launch.</p>
+      <div>{["Strategy", "Content", "Design", "Development", "Launch support"].map((item) => <span key={item}>{item}</span>)}</div>
+    </motion.section>
+
+    <motion.section className="audience-section" initial={{ opacity: 0, y: 55 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: .45 }} viewport={{ once: true, amount: .12 }}>
+      <div className="section-intro">
+        <p className="eyebrow">01 / WHO WE HELP</p>
+        <h2>BUILT FOR THE MOMENT YOUR BUSINESS NEEDS <span>MORE.</span></h2>
+        <p className="audience-question">Whether you are starting fresh or fixing what no longer works, the right combination of strategy, design and technology should make the next move clearer.</p>
+      </div>
+      <div className="audience-grid">{clientNeeds.map((item, index) => <motion.article key={item.number} initial={{ opacity: 0, y: 36 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: .32, delay: index * .05 }} viewport={{ once: true, amount: .35 }}><span>{item.number}</span><h3>{item.title}</h3><p>{item.text}</p><i aria-hidden="true">↗</i></motion.article>)}</div>
+    </motion.section>
+
+    <section className="dark-scene home-services">
+      <div className="section-intro section-intro-dark">
+        <p className="eyebrow">02 / WHAT WE DO</p>
+        <h2>FIVE CAPABILITIES.<br /><span>ONE CLEAR DIRECTION.</span></h2>
+        <p>Start with one service or connect several into a complete launch, redesign or growth engagement.</p>
+      </div>
+      <div className="home-service-list">{services.map((service) => <motion.article key={service.slug} initial={{ opacity: .25, x: -28 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ amount: .55 }} transition={{ duration: .32 }}>
+        <span>{service.number}</span><h3>{service.name}</h3><div><p>{service.line}</p><ul>{service.items.map((item) => <li key={item}>{item}</li>)}</ul></div><Link href={`/services#${service.slug}`} aria-label={`Explore ${service.name}`}>↗</Link>
+      </motion.article>)}</div>
+    </section>
+
+    <section id="selected-work" className="work-scene proof-scene">
+      <div className="section-intro"><p className="eyebrow">03 / SELECTED WORK</p><h2>SEE THE THINKING<br /><span>IN THE WORK.</span></h2><p>Real projects show how the parts come together—from the problem and decisions to the finished experience.</p></div>
+      <div className="live-work-grid">{resolvedLiveSites.map((site, index) => <motion.article className="live-project" key={site.slug} initial={{ opacity: 0, y: 42 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: .4, delay: index * .06 }} viewport={{ once: true, amount: .2 }}>
+        <div className="live-browser">
+          <div className="live-browser-bar"><i /><i /><i /><span>{site.displayUrl}</span><b>LIVE</b></div>
+          <div className="live-frame-shell"><iframe src={site.url} title={`${site.name} live website preview`} loading="lazy" /></div>
+        </div>
+        <div className="live-project-meta"><div><span>0{index + 1} / {site.type}</span><h3>{site.name}</h3></div><div className="live-project-links"><a href={site.url} target="_blank" rel="noreferrer">Visit live site ↗</a><Link href={`/work/${site.slug}`}>Case study →</Link></div></div>
+      </motion.article>)}</div>
+      <MagneticLink href="/work">See all work</MagneticLink>
+    </section>
+
+    <section className="process-preview">
+      <div className="section-intro"><p className="eyebrow">04 / HOW IT WORKS</p><h2>A CLEAR ROUTE<br />FROM IDEA TO <span>IMPACT.</span></h2><p>A visible process keeps decisions focused, protects momentum and makes collaboration easier.</p></div>
+      <div className="process-track">{process.map(([number, title, text], index) => <motion.article key={number} initial={{ opacity: 0, y: 32 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: .3, delay: index * .04 }} viewport={{ once: true, amount: .4 }}><span>{number}</span><h3>{title}</h3><p>{text}</p></motion.article>)}</div>
+      <Link href="/process" className="inline-arrow">Explore the full process <span>↗</span></Link>
+    </section>
+
+    <section className="dark-scene why-section">
+      <div className="why-statement"><p className="eyebrow">05 / WHY ICODEEE</p><h2>EXTRA ISN&apos;T<br /><span>DECORATION.</span></h2><p>It is the thinking before the work, the care inside the execution and the detail that helps the result last.</p></div>
+      <div className="reason-grid">{reasons.map(([title, text], index) => <motion.article key={title} initial={{ opacity: .2, x: 35 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: .32 }} viewport={{ amount: .55 }}><span>0{index + 1}</span><h3>{title}</h3><p>{text}</p></motion.article>)}</div>
+    </section>
+
+    <section className="experience-section">
+      <div className="section-intro"><p className="eyebrow">06 / THE CLIENT EXPERIENCE</p><h2>GOOD WORK SHOULD<br /><span>FEEL GOOD TO MAKE.</span></h2><p>Every engagement is designed around three practical standards: clarity, thoughtful decisions and support beyond launch.</p></div>
+      <div className="experience-grid">{expectations.map(([title, text], index) => <motion.article key={title} initial={{ opacity: 0, rotateX: 9, y: 34 }} whileInView={{ opacity: 1, rotateX: 0, y: 0 }} transition={{ duration: .32, delay: index * .05 }} viewport={{ once: true, amount: .35 }}><span>0{index + 1}</span><h3>{title}</h3><p>{text}</p><i aria-hidden="true">0{index + 1}</i></motion.article>)}</div>
+    </section>
+
+    <section className="faq-section">
+      <div className="section-intro"><p className="eyebrow">07 / BEFORE WE START</p><h2>USEFUL ANSWERS.<br /><span>NO SURPRISES.</span></h2></div>
+      <div className="faq-list">{faqs.map(([question, answer]) => <details key={question}><summary>{question}<span>+</span></summary><p>{answer}</p></details>)}</div>
+    </section>
+
+    <section className="final-cta conversion-cta"><p className="eyebrow">08 / LET&apos;S BUILD</p><h2>READY FOR THE<br /><span>NEXT VERSION?</span></h2><p>Tell us where your business is now and where you want it to go.</p><MagneticLink href="/contact">Discuss your project</MagneticLink><small>We usually reply within one business day.</small></section>
+  </main>;
+}
